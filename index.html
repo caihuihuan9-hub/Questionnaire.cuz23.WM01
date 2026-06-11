@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中國微短劇在港傳播效果調查系統</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM UMD -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Babel standalone for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        /* 簡單的淡入動畫取代原 animate-in */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // ---------- 圖標組件 (替換 lucide-react) ----------
+        const BarChart3 = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <line x1="3" y1="3" x2="3" y2="21" /><line x1="18" y1="3" x2="18" y2="21" /><path d="M9 9v8" /><path d="M15 9v8" /><path d="M21 13v8" /><path d="M6 13v8" />
+            </svg>
+        );
+        const FileText = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" /><path d="M14 2v6h6" /><path d="M16 13H8" /><path d="M16 17H8" /><path d="M10 9H8" />
+            </svg>
+        );
+        const Users = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+        );
+        const LogOut = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+        );
+        const ShieldCheck = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9 12l2 2 4-4" />
+            </svg>
+        );
+        const CheckCircle2 = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <circle cx="12" cy="12" r="10" /><path d="M9 12l2 2 4-4" />
+            </svg>
+        );
+        const ChevronRight = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="m9 18 6-6-6-6" />
+            </svg>
+        );
+        const ChevronLeft = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="m15 18-6-6 6-6" />
+            </svg>
+        );
+        const MonitorPlay = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <rect width="20" height="14" x="2" y="3" rx="2" /><path d="M12 17v4" /><path d="M8 21h8" /><path d="m10 8 5 3-5 3Z" />
+            </svg>
+        );
+        const TrendingUp = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" />
+            </svg>
+        );
+        const PieChart = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" />
+            </svg>
+        );
+        const AlertCircle = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+        );
+
+        // ---------- 元件：提前結束畫面 ----------
+        const EarlyExitView = ({ onBack }) => (
+            <div className="max-w-xl mx-auto mt-20 bg-white p-10 rounded-xl shadow-sm border border-gray-200 text-center animate-fade-in">
+                <AlertCircle className="w-20 h-20 text-amber-500 mx-auto mb-6" />
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">感謝您的參與！</h2>
+                <p className="text-gray-600 mb-8 leading-relaxed">
+                    根據您的回答，您目前不符合本次調查的目標受眾設定（如：年齡限制、非居於香港或未觀看過微短劇）。<br/><br/>
+                    非常感謝您抽空協助我們的學術研究！
+                </p>
+                <button onClick={onBack} className="text-indigo-600 font-medium hover:text-indigo-800 underline">
+                    重新開始測試
+                </button>
+            </div>
+        );
+
+        // ---------- 元件：問卷填寫介面 ----------
+        const SurveyForm = ({ onSubmit }) => {
+            const [step, setStep] = useState(0);
+            const [isTerminated, setIsTerminated] = useState(false);
+            const [answers, setAnswers] = useState({
+                q6: [], q8: [], q13: []
+            });
+
+            const handleRadioChange = (name, value) => {
+                setAnswers(prev => ({ ...prev, [name]: value }));
+            };
+
+            const handleCheckboxChange = (name, option, max = null) => {
+                setAnswers(prev => {
+                    const current = prev[name] || [];
+                    if (current.includes(option)) {
+                        return { ...prev, [name]: current.filter(item => item !== option) };
+                    } else {
+                        if (max && current.length >= max) return prev;
+                        return { ...prev, [name]: [...current, option] };
+                    }
+                });
+            };
+
+            const canProceed = () => {
+                switch (step) {
+                    case 1: return !!answers.q1;
+                    case 2: return !!answers.q2;
+                    case 3: return !!answers.q3;
+                    case 4: return !!answers.q4;
+                    case 5: return !!answers.q5;
+                    case 6: return answers.q6 && answers.q6.length > 0;
+                    case 7: return !!answers.q7;
+                    case 8: return answers.q8 && answers.q8.length > 0;
+                    case 9: return !!(answers.q9_1 && answers.q9_2 && answers.q9_3 && answers.q9_4);
+                    case 10: return !!(answers.q10_1 && answers.q10_2 && answers.q10_3 && answers.q10_4);
+                    case 11: return !!(answers.q11_1 && answers.q11_2 && answers.q11_3 && answers.q11_4);
+                    case 12: return !!answers.q12;
+                    case 13: return answers.q13 && answers.q13.length > 0;
+                    default: return true;
+                }
+            };
+
+            const handleNext = () => {
+                if (step === 1 && (answers.q1 === '18歲以下' || answers.q1 === '36歲或以上')) {
+                    setIsTerminated(true);
+                    window.scrollTo(0, 0);
+                    return;
+                }
+                if (step === 2 && answers.q2 === '否') {
+                    setIsTerminated(true);
+                    window.scrollTo(0, 0);
+                    return;
+                }
+                if (step === 3 && answers.q3 === '否') {
+                    setIsTerminated(true);
+                    window.scrollTo(0, 0);
+                    return;
+                }
+
+                if (step < 13) {
+                    setStep(s => s + 1);
+                    window.scrollTo(0, 0);
+                } else {
+                    onSubmit();
+                    window.scrollTo(0, 0);
+                }
+            };
+
+            const handlePrev = () => {
+                setStep(s => Math.max(0, s - 1));
+                window.scrollTo(0, 0);
+            };
+
+            if (isTerminated) {
+                return <EarlyExitView onBack={() => { setIsTerminated(false); setStep(0); setAnswers({q6: [], q8: [], q13: []}); }} />;
+            }
+
+            const getSectionInfo = () => {
+                if (step >= 1 && step <= 5) return { num: 1, title: '第一部分：甄別與基本資料' };
+                if (step >= 6 && step <= 8) return { num: 2, title: '第二部分：觀看行為與習慣' };
+                if (step >= 9 && step <= 11) return { num: 3, title: '第三部分：觀看體驗與傳播意願（核心評價）' };
+                if (step >= 12 && step <= 13) return { num: 4, title: '第四部分：付費行為與反饋' };
+                return null;
+            };
+
+            const sectionInfo = getSectionInfo();
+
+            const RadioOption = ({ name, option }) => (
+                <label className={`flex items-center space-x-4 cursor-pointer p-5 border-2 rounded-xl transition-all duration-200 ${answers[name] === option ? 'bg-indigo-50 border-indigo-500 shadow-sm' : 'hover:bg-gray-50 border-gray-100'}`}>
+                    <input type="radio" name={name} value={option} checked={answers[name] === option} onChange={() => handleRadioChange(name, option)} className="w-5 h-5 text-indigo-600 focus:ring-indigo-500" />
+                    <span className="text-gray-700 md:text-lg">{option}</span>
+                </label>
+            );
+
+            const CheckboxOption = ({ name, option, max = null }) => {
+                const isChecked = answers[name]?.includes(option);
+                const isDisabled = max && !isChecked && answers[name]?.length >= max;
+                
+                return (
+                    <label className={`flex items-center space-x-4 cursor-pointer p-5 border-2 rounded-xl transition-all duration-200 ${isChecked ? 'bg-indigo-50 border-indigo-500 shadow-sm' : 'hover:bg-gray-50 border-gray-100'} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                        <input type="checkbox" checked={isChecked} onChange={() => handleCheckboxChange(name, option, max)} disabled={isDisabled} className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500" />
+                        <span className="text-gray-700 md:text-lg">{option}</span>
+                    </label>
+                );
+            };
+
+            const LikertRow = ({ question, name }) => (
+                <div className="flex flex-col md:flex-row md:items-center justify-between py-6 border-b border-gray-100 last:border-0 hover:bg-gray-50 px-4 rounded-lg transition-colors">
+                    <span className="mb-4 md:mb-0 md:w-7/12 text-gray-800 md:text-lg pr-4">{question}</span>
+                    <div className="flex justify-between w-full md:w-5/12 px-2">
+                        {[1, 2, 3, 4, 5].map(val => (
+                            <label key={val} className="flex flex-col items-center cursor-pointer group">
+                                <input type="radio" name={name} value={val} checked={answers[name] === val} onChange={() => handleRadioChange(name, val)} className="w-6 h-6 text-indigo-600 focus:ring-indigo-500 border-gray-300" />
+                                <span className={`text-sm mt-2 ${answers[name] === val ? 'text-indigo-700 font-bold' : 'text-gray-400 group-hover:text-indigo-600'}`}>{val}</span>
+                            </label>
+                        ))}
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-10">
+                    {step === 0 ? (
+                        <div className="p-8 md:p-12 text-center animate-fade-in">
+                            <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <FileText className="w-10 h-10 text-indigo-600" />
+                            </div>
+                            <h1 className="text-3xl font-bold text-gray-800 mb-6 leading-tight">中國微短劇在港傳播效果與觀看體驗調查</h1>
+                            <div className="bg-indigo-50 text-indigo-800 p-6 rounded-xl text-left mb-10 shadow-inner">
+                                <p className="font-bold mb-2">【卷首語】</p>
+                                <p className="leading-relaxed">
+                                    您好！我們是文化創意與管理學院的研究團隊，目前正在進行一項關於「微短劇（每集時長通常在1-5分鐘左右的連續劇集）觀看體驗與傳播效果」的學術調查。
+                                    <br/><br/>
+                                    本問卷採取匿名形式，所有數據僅供學術統計分析使用，絕不外洩。大約需要佔用您 3 分鐘的時間，感謝您的支持與協助！
+                                </p>
+                            </div>
+                            <button onClick={() => { setStep(1); window.scrollTo(0,0); }} className="bg-indigo-600 text-white text-lg font-bold py-4 px-12 rounded-xl hover:bg-indigo-700 transition shadow-lg hover:shadow-xl flex items-center justify-center mx-auto">
+                                開始填寫問卷 <ChevronRight className="w-6 h-6 ml-2" />
+                            </button>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="bg-gray-100 h-2 w-full">
+                                <div className="bg-indigo-600 h-2 transition-all duration-500 ease-out" style={{ width: `${(step / 13) * 100}%` }}></div>
+                            </div>
+
+                            <div className="p-6 md:p-10">
+                                {sectionInfo && (
+                                    <div className="mb-8">
+                                        <span className="text-xs font-bold tracking-wider text-indigo-500 uppercase bg-indigo-50 px-3 py-1 rounded-full mb-3 inline-block">
+                                            進度 {step} / 13
+                                        </span>
+                                        <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                                            {sectionInfo.title}
+                                        </h2>
+                                    </div>
+                                )}
+
+                                <div className="min-h-[300px] animate-fade-in">
+                                    {step === 1 && (
+                                        <div>
+                                            <h3 className="font-bold text-xl text-gray-800 mb-6">1. 請問您的年齡是？<span className="text-sm font-normal text-gray-500 ml-2">【單選題】</span></h3>
+                                            <div className="space-y-3">
+                                                {['18歲以下', '18 - 25歲', '26 - 35歲', '36歲或以上'].map(opt => <RadioOption key={opt} name="q1" option={opt} />)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {step === 2 && (
+                                        <div>
+                                            <h3 className="font-bold text-xl text-gray-800 mb-6">2. 請問您目前是否居住在香港？<span className="text-sm font-normal text-gray-500 ml-2">【單選題】</span></h3>
+                                            <div className="space-y-3">
+                                                {['是', '否'].map(opt => <RadioOption key={opt} name="q2" option={opt} />)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {step === 3 && (
+                                        <div>
+                                            <h3 className="font-bold text-xl text-gray-800 mb-6">3. 過去半年內，您是否觀看過中國大陸出品/製作的微短劇？<span className="text-sm font-normal text-gray-500 ml-2">【單選題】</span></h3>
+                                            <div className="space-y-3">
+                                                {['是', '否'].map(opt => <RadioOption key={opt} name="q3" option={opt} />)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {step === 4 && (
+                                        <div>
+                                            <h3 className="font-bold text-xl text-gray-800 mb-6">4. 您的性別是？<span className="text-sm font-normal text-gray-500 ml-2">【單選題】</span></h3>
+                                            <div className="space-y-3">
+                                                {['男', '女', '其他 / 不願透露'].map(opt => <RadioOption key={opt} name="q4" option={opt} />)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {step === 5 && (
+                                        <div>
+                                            <h3 className="font-bold text-xl text-gray-800 mb-6">5. 您的職業狀態是？<span className="text-sm font-normal text-gray-500 ml-2">【單選題】</span></h3>
+                                            <div className="space-y-3">
+                                                {['學生', '在職人士', '自由職業者', '待業 / 其他'].map(opt => <RadioOption key={opt} name="q5" option={opt} />)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {step === 6 && (
+                                        <div>
+                                            <h3 className="font-bold text-xl text-gray-800 mb-6">6. 您通常透過哪些平台觀看微短劇？<span className="text-sm font-normal text-gray-500 ml-2">【可多選】</span></h3>
+                                            <div className="space-y-3">
+                                                {['社交/短視頻平台（TikTok / 抖音 / 小紅書 / Bilibili）', '國際影音與社交平台（YouTube Shorts / IG Reels / Facebook）', '專屬微短劇 App（如 ReelShort, DramaBox, 九州等）', '盜版/資源整合網站', '其他'].map(opt => <CheckboxOption key={opt} name="q6" option={opt} />)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {step === 7 && (
+                                        <div>
+                                            <h3 className="font-bold text-xl text-gray-800 mb-6">7. 您平均每週觀看微短劇的頻率大約是？<span className="text-sm font-normal text-gray-500 ml-2">【單選題】</span></h3>
+                                            <div className="space-y-3">
+                                                {['幾乎不看（僅偶爾刷到）', '每週 1-2 次', '每週 3-5 次', '幾乎每天觀看'].map(opt => <RadioOption key={opt} name="q7" option={opt} />)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {step === 8 && (
+                                        <div>
+                                            <h3 className="font-bold text-xl text-gray-800 mb-6">8. 您最偏好觀看哪種類型的微短劇？<span className="text-sm font-normal text-gray-500 ml-2">【最多選3項】</span></h3>
+                                            <div className="space-y-3">
+                                                {['情感倫理（如：霸道總裁、甜寵、婆媳糾紛）', '逆襲復仇（如：贅婿、打臉、重生）', '懸疑探案', '古裝仙俠 / 穿越', 'BL / GL (耽美 / 百合)', '喜劇搞笑', '其他'].map(opt => <CheckboxOption key={opt} name="q8" option={opt} max={3} />)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {step === 9 && (
+                                        <div>
+                                            <h3 className="font-bold text-xl text-gray-800 mb-4">9. 內容偏好與文化接受度</h3>
+                                            <p className="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg mb-6 border border-amber-200">
+                                                請評分：1 = 非常不同意，2 = 比較不同意，3 = 一般/中立，4 = 比較同意，5 = 非常同意
+                                            </p>
+                                            <div className="bg-white border border-gray-200 rounded-xl p-2 shadow-sm">
+                                                <LikertRow name="q9_1" question="微短劇的劇情節奏快、反轉多，能吸引我持續看下去。" />
+                                                <LikertRow name="q9_2" question="劇中的人物設定和故事情節，符合我的日常娛樂口味。" />
+                                                <LikertRow name="q9_3" question="劇中所展現的中國內地社會現象和生活方式，我很容易理解，沒有文化隔閡。" />
+                                                <LikertRow name="q9_4" question="如果微短劇能提供地道順暢的「繁體中文字幕」，我會更願意追劇。" />
+                                            </div>
+                                        </div>
+                                    )}
+                                    {step === 10 && (
+                                        <div>
+                                            <h3 className="font-bold text-xl text-gray-800 mb-4">10. 社會文化影響與口碑傳播</h3>
+                                            <p className="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg mb-6 border border-amber-200">
+                                                請評分：1 = 非常不同意，2 = 比較不同意，3 = 一般/中立，4 = 比較同意，5 = 非常同意
+                                            </p>
+                                            <div className="bg-white border border-gray-200 rounded-xl p-2 shadow-sm">
+                                                <LikertRow name="q10_1" question="觀看中國微短劇，讓我對中國內地的現代生活或流行文化有了更正面的印象。" />
+                                                <LikertRow name="q10_2" question="劇中傳遞的價值觀（如個人奮鬥、家庭倫理、情感觀念）能引起我的共鳴。" />
+                                                <LikertRow name="q10_3" question="當看到精彩的微短劇片段時，我會主動讚好 (Like)、留言或收藏。" />
+                                                <LikertRow name="q10_4" question="我願意將好看的中國微短劇分享給身邊的朋友或轉發到我的社交媒體（如 IG, WhatsApp）。" />
+                                            </div>
+                                        </div>
+                                    )}
+                                    {step === 11 && (
+                                        <div>
+                                            <h3 className="font-bold text-xl text-gray-800 mb-4">11. 傳播渠道與商業模式</h3>
+                                            <p className="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg mb-6 border border-amber-200">
+                                                請評分：1 = 非常不同意，2 = 比較不同意，3 = 一般/中立，4 = 比較同意，5 = 非常同意
+                                            </p>
+                                            <div className="bg-white border border-gray-200 rounded-xl p-2 shadow-sm">
+                                                <LikertRow name="q11_1" question="社交平台的演算法經常能精準推薦我感興趣的微短劇。" />
+                                                <LikertRow name="q11_2" question="我願意為高質量的微短劇花錢解鎖後續集數。" />
+                                                <LikertRow name="q11_3" question="如果看廣告可以免費解鎖下一集，我完全可以接受並願意繼續觀看。" />
+                                                <LikertRow name="q11_4" question="我認為目前微短劇平台普遍的收費定價是在我的經濟承受範圍內的。" />
+                                            </div>
+                                        </div>
+                                    )}
+                                    {step === 12 && (
+                                        <div>
+                                            <h3 className="font-bold text-xl text-gray-800 mb-6">12. 如果您需要為微短劇付費，您最希望/最常使用的支付方式是？<span className="text-sm font-normal text-gray-500 ml-2">【單選題】</span></h3>
+                                            <div className="space-y-3">
+                                                {['信用卡 / 扣帳卡 (Visa/Mastercard)', '電子錢包 (PayMe / AlipayHK / WeChat Pay HK)', '轉數快 (FPS)', '手機應用程式內購 (Apple Pay / Google Pay)', '絕對不會為微短劇付費'].map(opt => <RadioOption key={opt} name="q12" option={opt} />)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {step === 13 && (
+                                        <div>
+                                            <h3 className="font-bold text-xl text-gray-800 mb-6">13. 您認為目前中國微短劇在香港市場傳播，最需要改進的地方是甚麼？<span className="text-sm font-normal text-gray-500 ml-2">【可多選】</span></h3>
+                                            <div className="space-y-3">
+                                                {['劇情套路重複，缺乏新意', '翻譯或字幕不夠本地化（缺乏繁體字或港式表達）', '收費模式不合理或價格過高', '廣告植入或彈窗過多，影響觀看體驗', '價值觀過於誇張或脫離現實', '其他'].map(opt => <CheckboxOption key={opt} name="q13" option={opt} />)}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="mt-10 pt-6 border-t border-gray-100 flex justify-between items-center">
+                                    {step > 1 ? (
+                                        <button onClick={handlePrev} className="px-6 py-3 rounded-lg font-medium text-gray-600 hover:bg-gray-100 transition-colors flex items-center">
+                                            <ChevronLeft className="w-5 h-5 mr-1" /> 上一題
+                                        </button>
+                                    ) : <div></div>}
+                                    
+                                    <button 
+                                        onClick={handleNext} 
+                                        disabled={!canProceed()}
+                                        className={`px-8 py-3 rounded-lg font-bold flex items-center transition-all ${canProceed() ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                                    >
+                                        {step === 13 ? '提交問卷' : '下一題'} <ChevronRight className="w-5 h-5 ml-1" />
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </div>
+            );
+        };
+
+        // ---------- 元件：成功提交畫面 ----------
+        const SuccessView = ({ onBack }) => (
+            <div className="max-w-xl mx-auto mt-20 bg-white p-10 rounded-xl shadow-sm border border-gray-200 text-center animate-fade-in">
+                <CheckCircle2 className="w-20 h-20 text-green-500 mx-auto mb-6" />
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">提交成功！</h2>
+                <p className="text-gray-600 mb-8">非常感謝您參與「中國微短劇在港傳播效果與觀看體驗調查」。您的寶貴意見將對我們的學術研究提供極大的幫助。</p>
+                <button onClick={onBack} className="text-indigo-600 font-medium hover:text-indigo-800 underline">
+                    返回問卷首頁
+                </button>
+            </div>
+        );
+
+        // ---------- 元件：後台登入畫面 ----------
+        const LoginView = ({ onLogin }) => {
+            const [username, setUsername] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                if (username === 'cuz666' && password === 'cuz888') {
+                    onLogin();
+                } else {
+                    setError('帳號或密碼錯誤，請重新輸入。');
+                }
+            };
+
+            return (
+                <div className="max-w-md mx-auto mt-20 bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 animate-fade-in">
+                    <div className="bg-slate-800 p-6 text-center">
+                        <ShieldCheck className="w-12 h-12 text-blue-400 mx-auto mb-3" />
+                        <h2 className="text-xl font-bold text-white">研究數據後台管理系統</h2>
+                        <p className="text-slate-400 text-sm mt-1">請登入以查看調查數據報告</p>
+                    </div>
+                    <form onSubmit={handleLogin} className="p-8">
+                        {error && <div className="bg-red-50 text-red-600 p-3 rounded text-sm mb-4 border border-red-100">{error}</div>}
+                        <div className="mb-4">
+                            <label className="block text-gray-700 text-sm font-bold mb-2">管理員帳號</label>
+                            <input 
+                                type="text" 
+                                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                value={username} 
+                                onChange={e => setUsername(e.target.value)}
+                                placeholder="請輸入帳號 (cuz666)"
+                                required 
+                            />
+                        </div>
+                        <div className="mb-6">
+                            <label className="block text-gray-700 text-sm font-bold mb-2">管理員密碼</label>
+                            <input 
+                                type="password" 
+                                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                value={password} 
+                                onChange={e => setPassword(e.target.value)}
+                                placeholder="請輸入密碼 (cuz888)"
+                                required 
+                            />
+                        </div>
+                        <button type="submit" className="w-full bg-slate-800 text-white font-bold py-3 px-4 rounded hover:bg-slate-700 transition duration-300">
+                            登入系統
+                        </button>
+                    </form>
+                </div>
+            );
+        };
+
+        // ---------- 元件：後台數據儀表板 ----------
+        const DashboardView = () => {
+            const StatBar = ({ label, percentage, color = "bg-blue-500", count }) => (
+                <div className="mb-4">
+                    <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-700 font-medium">{label}</span>
+                        <span className="text-gray-500 text-xs">{count}人 ({percentage}%)</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2.5">
+                        <div className={`${color} h-2.5 rounded-full transition-all duration-1000 ease-out`} style={{ width: `${percentage}%` }}></div>
+                    </div>
+                </div>
+            );
+
+            const MeanBar = ({ label, mean, sd, highlight = false }) => (
+                <div className="mb-5 bg-white p-3 border border-gray-100 rounded shadow-sm hover:shadow-md transition">
+                    <div className="flex justify-between items-start mb-2">
+                        <span className={`text-sm md:text-base leading-tight pr-4 ${highlight ? 'font-bold text-indigo-700' : 'text-gray-700'}`}>{label}</span>
+                        <div className="text-right whitespace-nowrap">
+                            <span className="block font-bold text-slate-800">M = {mean}</span>
+                            <span className="text-xs text-gray-400">SD = {sd}</span>
+                        </div>
+                    </div>
+                    <div className="relative w-full bg-gray-100 rounded-full h-3 flex items-center">
+                        {[1,2,3,4,5].map(v => (
+                            <div key={v} className="absolute h-4 w-px bg-gray-300" style={{ left: `${(v/5)*100}%` }}></div>
+                        ))}
+                        <div className={`h-3 rounded-full ${mean >= 4 ? 'bg-emerald-500' : mean >= 3 ? 'bg-amber-400' : 'bg-rose-400'}`} style={{ width: `${(mean / 5) * 100}%` }}></div>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="max-w-6xl mx-auto space-y-6 pb-10 animate-fade-in">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-center">
+                            <div className="bg-blue-100 p-4 rounded-lg mr-4">
+                                <Users className="w-8 h-8 text-blue-600" />
+                            </div>
+                            <div>
+                                <p className="text-gray-500 text-sm font-medium">回收總樣本數</p>
+                                <h3 className="text-3xl font-bold text-gray-800">312 <span className="text-sm font-normal text-gray-500">份</span></h3>
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-center">
+                            <div className="bg-emerald-100 p-4 rounded-lg mr-4">
+                                <FileText className="w-8 h-8 text-emerald-600" />
+                            </div>
+                            <div>
+                                <p className="text-gray-500 text-sm font-medium">最終有效樣本</p>
+                                <h3 className="text-3xl font-bold text-gray-800">264 <span className="text-sm font-normal text-gray-500">份</span></h3>
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-center">
+                            <div className="bg-purple-100 p-4 rounded-lg mr-4">
+                                <PieChart className="w-8 h-8 text-purple-600" />
+                            </div>
+                            <div>
+                                <p className="text-gray-500 text-sm font-medium">有效回收率</p>
+                                <h3 className="text-3xl font-bold text-gray-800">84.6 <span className="text-xl font-bold text-gray-500">%</span></h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center pb-2 border-b">
+                                <Users className="w-5 h-5 mr-2 text-slate-500" /> 一、受訪者人口統計學特徵
+                            </h3>
+                            <div className="mb-6">
+                                <h4 className="text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">年齡分佈</h4>
+                                <StatBar label="18 - 25歲 (集中於20-22歲)" percentage={68.9} count={182} color="bg-blue-400" />
+                                <StatBar label="26 - 35歲" percentage={31.1} count={82} color="bg-blue-300" />
+                            </div>
+                            <div className="mb-6">
+                                <h4 className="text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">性別分佈</h4>
+                                <StatBar label="女性" percentage={54.2} count={143} color="bg-pink-400" />
+                                <StatBar label="男性" percentage={43.9} count={116} color="bg-sky-400" />
+                                <StatBar label="其他 / 不願透露" percentage={1.9} count={5} color="bg-gray-300" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">職業狀態</h4>
+                                <StatBar label="學生" percentage={58.7} count={155} color="bg-indigo-400" />
+                                <StatBar label="在職人士" percentage={34.8} count={92} color="bg-indigo-300" />
+                                <StatBar label="自由職業者/待業/其他" percentage={6.5} count={17} color="bg-indigo-200" />
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center pb-2 border-b">
+                                <MonitorPlay className="w-5 h-5 mr-2 text-slate-500" /> 二、觀看行為與習慣
+                            </h3>
+                            <div className="mb-6">
+                                <h4 className="text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">平台偏好 (多選)</h4>
+                                <StatBar label="Instagram Reels" percentage={72.3} count="-" color="bg-rose-500" />
+                                <StatBar label="YouTube Shorts" percentage={68.5} count="-" color="bg-red-500" />
+                                <StatBar label="TikTok / 抖音" percentage={54.2} count="-" color="bg-black" />
+                                <StatBar label="專屬微短劇 App (ReelShort等)" percentage={18.9} count="-" color="bg-amber-500" />
+                            </div>
+                            <div className="mb-6">
+                                <h4 className="text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">觀看頻率</h4>
+                                <StatBar label="每週 3-5 次" percentage={41.2} count="-" color="bg-teal-500" />
+                                <StatBar label="每週 1-2 次" percentage={32.6} count="-" color="bg-teal-400" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">題材偏好 TOP 4 (多選)</h4>
+                                <StatBar label="1. 喜劇搞笑" percentage={65.2} count="-" color="bg-orange-400" />
+                                <StatBar label="2. 逆襲復仇" percentage={58.7} count="-" color="bg-orange-400" />
+                                <StatBar label="3. 懸疑探案" percentage={47.3} count="-" color="bg-orange-300" />
+                                <StatBar label="4. 情感倫理" percentage={41.5} count="-" color="bg-orange-300" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h3 className="text-lg font-bold text-slate-800 mb-2 flex items-center">
+                            <TrendingUp className="w-5 h-5 mr-2 text-slate-500" /> 三、核心變量測量 (李克特五點量表)
+                        </h3>
+                        <p className="text-sm text-gray-500 mb-6 pb-2 border-b">註：分數為 1-5 分，得分越高代表越同意/認可。(M=均值, SD=標準差)</p>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div className="bg-slate-50 p-4 rounded-lg">
+                                <h4 className="font-bold text-indigo-800 mb-4 border-l-4 border-indigo-500 pl-2">模塊 A：內容與文化接受度</h4>
+                                <MeanBar highlight label="提供地道順暢的「繁體中文字幕」會更願意追劇" mean={4.45} sd={0.72} />
+                                <MeanBar label="劇情節奏快、反轉多，能吸引持續看" mean={4.12} sd={0.85} />
+                                <MeanBar label="無文化隔閡，容易理解內地社會現象" mean={3.68} sd={0.94} />
+                                <MeanBar label="人物設定和故事情節符合日常口味" mean={3.55} sd={1.02} />
+                            </div>
+                            <div className="bg-slate-50 p-4 rounded-lg">
+                                <h4 className="font-bold text-blue-800 mb-4 border-l-4 border-blue-500 pl-2">模塊 B：社會影響與口碑傳播</h4>
+                                <MeanBar label="主動讚好 (Like)、留言或收藏" mean={3.85} sd={0.98} />
+                                <MeanBar label="願意分享給朋友或轉發至社交媒體" mean={3.72} sd={1.05} />
+                                <MeanBar label="對內地現代生活/流行文化有更正面印象" mean={3.42} sd={1.10} />
+                                <MeanBar label="價值觀能引起共鳴" mean={3.25} sd={1.15} />
+                            </div>
+                            <div className="bg-slate-50 p-4 rounded-lg">
+                                <h4 className="font-bold text-emerald-800 mb-4 border-l-4 border-emerald-500 pl-2">模塊 C：傳播渠道與商業模式</h4>
+                                <MeanBar highlight label="看廣告免費解鎖下一集可以接受" mean={4.28} sd={0.76} />
+                                <MeanBar label="演算法能精準推薦感興趣的微短劇" mean={4.05} sd={0.88} />
+                                <MeanBar label="目前的收費定價在經濟承受範圍內" mean={2.85} sd={1.12} />
+                                <MeanBar label="願意為高質量的微短劇花錢解鎖" mean={2.45} sd={1.25} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // ---------- 主應用程式 ----------
+        function App() {
+            const [currentView, setCurrentView] = useState('survey');
+            const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+            const navigateTo = (view) => {
+                if (view === 'dashboard' && !isAuthenticated) {
+                    setCurrentView('login');
+                } else {
+                    setCurrentView(view);
+                }
+            };
+
+            const handleLogout = () => {
+                setIsAuthenticated(false);
+                setCurrentView('survey');
+            };
+
+            return (
+                <div className="min-h-screen bg-gray-100">
+                    <nav className="bg-white shadow-sm sticky top-0 z-10">
+                        <div className="max-w-6xl mx-auto px-4 h-16 flex justify-between items-center">
+                            <div className="flex items-center space-x-2 font-bold text-indigo-800 text-lg">
+                                <BarChart3 className="w-6 h-6 text-indigo-600" />
+                                <span>文創管理學院研究專案</span>
+                            </div>
+                            <div className="flex space-x-1">
+                                <button 
+                                    onClick={() => navigateTo('survey')}
+                                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${currentView === 'survey' || currentView === 'success' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                                >
+                                    前台問卷填寫
+                                </button>
+                                
+                                {isAuthenticated ? (
+                                    <>
+                                        <button 
+                                            onClick={() => navigateTo('dashboard')}
+                                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${currentView === 'dashboard' ? 'bg-slate-800 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                                        >
+                                            後台數據總覽
+                                        </button>
+                                        <button 
+                                            onClick={handleLogout}
+                                            className="px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 flex items-center ml-2"
+                                            title="登出"
+                                        >
+                                            <LogOut className="w-4 h-4" />
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button 
+                                        onClick={() => navigateTo('login')}
+                                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${currentView === 'login' ? 'bg-slate-800 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                                    >
+                                        後台管理登入
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </nav>
+
+                    <main className="p-4 md:p-8">
+                        {currentView === 'survey' && <SurveyForm onSubmit={() => setCurrentView('success')} />}
+                        {currentView === 'success' && <SuccessView onBack={() => setCurrentView('survey')} />}
+                        {currentView === 'login' && (
+                            <LoginView onLogin={() => {
+                                setIsAuthenticated(true);
+                                setCurrentView('dashboard');
+                            }} />
+                        )}
+                        {currentView === 'dashboard' && isAuthenticated && <DashboardView />}
+                    </main>
+                </div>
+            );
+        }
+
+        // 渲染到 #root
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
